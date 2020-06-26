@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 
 phi = np.linspace(0, 2*np.pi, 100)
 theta = np.linspace(0, np.pi, 100)
+fig = plt.figure()
+ax = fig.add_subplot(1,1,1)
+plt.show(block=False)
 
 class MainCycle:
 
@@ -101,7 +104,8 @@ class MainCycle:
         self.calc_potential_energy(self.particle_list)
         for i in range(self.particle_count):
             self.particle_list[i].update()
-        print(self.total_potential_energy[-1])
+        ax.plot(self.counter, self.total_potential_energy, color="blue")
+        plt.pause(0.01)
         #self.update_plot()
 
     def start_cycle(self, time_duration):
@@ -110,8 +114,8 @@ class MainCycle:
         #self.plot_particles()
         #self.set_interval(self.delta_t, self.iterate_cycle, time_duration)
         self.call_at_interval(self.delta_t, self.iterate_cycle, time_duration)
-        plt.plot(self.counter, self.total_potential_energy)
-        plt.show()
+        #plt.plot(self.counter, self.total_potential_energy)
+        #plt.show()
 
 if __name__ == "__main__":
     # first arg will be number of particles and second arg will be delta T in seconds and third arg will be total duration in seconds
