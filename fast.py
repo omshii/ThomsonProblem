@@ -1,11 +1,10 @@
 import numpy as np
 
-def calc_force(sep):
-    if sep!= 0:
-        force = sep / (np.linalg.norm(sep)) ** 3
+def calc_individual_forces(separations):
+    if np.any(separations):
+        return (separations/(np.linalg.norm(separations)) ** 3)
     else:
-        force = np.zeros((3))
-    return force
+        return np.zeros(3)
 
 particles = np.zeros((3))
 separations = np.zeros((3, 3, 3))
@@ -20,17 +19,13 @@ print("positions:", positions)
 #Initialize separations
 for i in range(3):
     for j in range(i+1, 3):
-        separations[i][j] = positions[i][0:] - positions[j][0:]
-        separations[j][i] = positions[j][0:] - positions[i][0:]
+        separations[i][j] = positions[i] - positions[j]
+        separations[j][i] = positions[j] - positions[i]
 
 print("Initialized separations:", separations)
 
-t = 0
-tt = 5
+individual_forces = np.apply_along_axis(calc_individual_forces, 2, separations)
+total_forces = np.sum(individual_forces, axis=1)
 
-#Start sim
-while t < tt:
-    force = np.where(separations!=0, (separations/(np.linalg.norm(separations)) ** 3), np.zeros(3))
-    t = t + 1
-
-print("final forces:", force)
+print("individual forces:", individual_forces)
+print("total forces:", total_forces)
