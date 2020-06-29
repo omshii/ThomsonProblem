@@ -64,7 +64,7 @@ while current_time<duration:
 
     #Calculate and update potential_energy
     e = time.time()
-    potential_energy = np.sum(np.nan_to_num((np.apply_along_axis(calc_energy, 2, separations)), 0, 0, 0))/2
+    potential_energy = np.sum(np.nan_to_num(1/np.linalg.norm(separations, axis=2), 0, 0, 0))/2
     etime = etime + time.time() - e
 
     current_time = current_time + dt
