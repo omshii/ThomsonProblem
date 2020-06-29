@@ -1,4 +1,12 @@
 import numpy as np
+import sys
+import time
+
+start_time = time.time()
+
+particle_count = int(sys.argv[1])
+dt = float(sys.argv[2])
+duration = float(sys.argv[3])
 
 #Helper functions
 def calc_individual_forces(separations):
@@ -17,28 +25,19 @@ def calc_unit_vector(position):
     return position/np.linalg.norm(position)
 
 #Initialization
-velocities = np.zeros((3, 3))
-separations = np.zeros((3, 3, 3))
+velocities = np.zeros((particle_count, 3))
+separations = np.zeros((particle_count, particle_count, 3))
 potential_energy = np.zeros((1))
-print("separations:", '\n', separations)
-print("velocities:", '\n',velocities)
-print("potential_energy:", '\n', potential_energy)
 
 #Randomized positions
-positions = np.random.rand(3,3)
-positions = np.array([[0.50855717, 0.23848786, 0.83814653], [0.1436721, 0.87508403, 0.04696972], [0.60268039, 0.89345049, 0.02003009]])
-
-print("randomized positions:", '\n', positions)
-positions = np.apply_along_axis(calc_unit_vector, 1, positions)
+positions = np.apply_along_axis(calc_unit_vector, 1, (np.random.rand(particle_count,3)))
 
 #Compute separations
-separations = np.einsum('ij, jik->ikj', positions, np.ones_like(separations)) - np.einsum('ij, kij->kij', positions, np.ones_like(separations))
-print("Initialized separations:", '\n', separations)
+separations = np.repeat(positions[:, np.newaxis, :], particle_count, axis=1) - np.repeat(positions[np.newaxis, :, :], particle_count, axis=0)
 
-dt = 0.01
-t = 0
+current_time = 0
 
-while t<50:
+while current_time<duration:
     #Calculate forces (without constraint)
     individual_forces = np.apply_along_axis(calc_individual_forces, 2, separations)
     total_forces = np.sum(individual_forces, axis=1)
@@ -56,17 +55,15 @@ while t<50:
     velocities = 0.997*(velocities - non_component_velocties)
 
     #Calculate and update positions
-    positions = positions + velocities*dt
-    positions = np.apply_along_axis(calc_unit_vector, 1, positions)
+    positions = np.apply_along_axis(calc_unit_vector, 1, positions + velocities*dt)
 
     #Calculate and update separations
-    separations = np.einsum('ij, jik->ikj', positions, np.ones_like(separations)) - np.einsum('ij, kij->kij', positions, np.ones_like(separations))
+    separations = np.repeat(positions[:, np.newaxis, :], particle_count, axis=1) - np.repeat(positions[np.newaxis, :, :], particle_count, axis=0)
 
     #Calculate and update potential_energy
-    temp_energy = np.apply_along_axis(calc_energy, 2, separations)
-    sum = np.sum(temp_energy)
-    potential_energy = sum/2
+    potential_energy = np.sum(np.apply_along_axis(calc_energy, 2, separations))/2
 
-    print(potential_energy)
+    current_time = current_time + dt
 
-    t = t+dt
+print(potential_energy)
+print("Time taken: ", time.time()-start_time)
