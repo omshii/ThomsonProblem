@@ -1,5 +1,6 @@
 import numpy as np
 
+#Helper functions
 def calc_individual_forces(separations):
     if np.any(separations):
         return (separations/(np.linalg.norm(separations)) ** 3)
@@ -15,24 +16,20 @@ def calc_energy(separations):
 def calc_unit_vector(position):
     return position/np.linalg.norm(position)
 
-particles = np.zeros((3))
+#Initialization
 velocities = np.zeros((3, 3))
 separations = np.zeros((3, 3, 3))
 potential_energy = np.zeros((1))
-
-print("particles: ", '\n', particles)
 print("separations:", '\n', separations)
 print("velocities:", '\n',velocities)
+print("potential_energy:", '\n', potential_energy)
 
-#Initialize positions
+#Randomized positions
 positions = np.random.rand(3,3)
 print("randomized positions:", '\n', positions)
 
-#Initialize separations
-for i in range(3):
-    for j in range(i+1, 3):
-        separations[i][j] = positions[i] - positions[j]
-        separations[j][i] = positions[j] - positions[i]
+#Compute separations
+separations = np.einsum('ij, jik->ikj', positions, np.ones_like(separations)) - np.einsum('ij, kij->kij', positions, np.ones_like(separations))
 print("Initialized separations:", '\n', separations)
 
 dt = 0.01
