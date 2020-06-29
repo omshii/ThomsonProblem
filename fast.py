@@ -3,6 +3,12 @@ import sys
 import time
 
 start_time = time.time()
+ftime = 0
+vtime = 0
+ptime = 0
+stime = 0
+etime = 0
+np.seterr(divide='ignore', invalid='ignore')
 
 particle_count = int(sys.argv[1])
 dt = float(sys.argv[2])
@@ -10,16 +16,10 @@ duration = float(sys.argv[3])
 
 #Helper functions
 def calc_individual_forces(separations):
-    if np.any(separations):
-        return (separations/(np.linalg.norm(separations)) ** 3)
-    else:
-        return np.zeros(3)
+    return (separations/(np.linalg.norm(separations)) ** 3)
 
 def calc_energy(separations):
-    if np.any(separations):
-        return 1/(np.linalg.norm(separations))
-    else:
-        return np.zeros(1)
+    return 1/(np.linalg.norm(separations))
 
 def calc_unit_vector(position):
     return position/np.linalg.norm(position)
@@ -38,32 +38,41 @@ separations = np.repeat(positions[:, np.newaxis, :], particle_count, axis=1) - n
 current_time = 0
 
 while current_time<duration:
-    #Calculate forces (without constraint)
-    individual_forces = np.apply_along_axis(calc_individual_forces, 2, separations)
-    total_forces = np.sum(individual_forces, axis=1)
 
-    #Calculate constraint for forces
+    #Calculate forces
+    f = time.time()
+    total_forces = np.sum((np.nan_to_num(np.apply_along_axis(calc_individual_forces, 2, separations), 0, 0, 0)), axis=1)
     unit_radii = np.apply_along_axis(calc_unit_vector, 1, positions)
-    dot_product = np.einsum('ij, ij->i',total_forces, positions)
-    non_component_forces = np.einsum('i, ij->ij', dot_product, unit_radii)
-    component_forces = total_forces - non_component_forces
+    component_forces = total_forces - np.einsum('i, ij->ij', (np.einsum('ij, ij->i',total_forces, positions)), unit_radii)
+    ftime = ftime + time.time() - f
 
     #Calculate and update velocities
-    velocities = velocities + component_forces*dt
-    dot_product_velocities = np.einsum('ij, ij->i',velocities, positions)
-    non_component_velocties = np.einsum('i, ij->ij', dot_product_velocities, unit_radii)
-    velocities = 0.997*(velocities - non_component_velocties)
+    v = time.time()
+    velocities = (velocities + component_forces*dt)
+    velocities = 0.997*(velocities - np.einsum('i, ij->ij', (np.einsum('ij, ij->i',velocities, positions)), unit_radii))
+    vtime = vtime + time.time() - v
 
     #Calculate and update positions
+    p = time.time()
     positions = np.apply_along_axis(calc_unit_vector, 1, positions + velocities*dt)
+    ptime = ptime + time.time() - p
 
     #Calculate and update separations
+    s = time.time()
     separations = np.repeat(positions[:, np.newaxis, :], particle_count, axis=1) - np.repeat(positions[np.newaxis, :, :], particle_count, axis=0)
+    stime = stime + time.time() - s
 
     #Calculate and update potential_energy
-    potential_energy = np.sum(np.apply_along_axis(calc_energy, 2, separations))/2
+    e = time.time()
+    potential_energy = np.sum(np.nan_to_num((np.apply_along_axis(calc_energy, 2, separations)), 0, 0, 0))/2
+    etime = etime + time.time() - e
 
     current_time = current_time + dt
 
 print(potential_energy)
 print("Time taken: ", time.time()-start_time)
+print("Force time: ", ftime)
+print("Velocity time: ", vtime)
+print("Postion time: ", ptime)
+print("Sep time: ", stime)
+print("Energy time: ", etime)
