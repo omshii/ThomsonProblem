@@ -35,7 +35,8 @@ while current_time<duration:
 
     #Calculate forces
     f = time.time()
-    total_forces = np.sum(np.repeat(np.nan_to_num(1/np.linalg.norm(separations, axis=2) ** 3, 0, 0, 0)[:, :, np.newaxis], 3, axis=2)*separations, axis=1)
+    magnitudes = np.linalg.norm(separations, axis=2)
+    total_forces = np.sum(np.repeat(np.nan_to_num(1/(magnitudes * magnitudes * magnitudes), 0, 0, 0)[:, :, np.newaxis], 3, axis=2)*separations, axis=1)
     unit_radii = np.repeat(1/np.linalg.norm(positions, axis=1)[:, np.newaxis], 3, axis=1)*positions
     component_forces = total_forces - np.einsum('i, ij->ij', (np.einsum('ij, ij->i',total_forces, positions)), unit_radii)
     ftime = ftime + time.time() - f
