@@ -41,6 +41,11 @@ while current_time<duration:
     component_forces = total_forces - np.einsum('i, ij->ij', (np.einsum('ij, ij->i',total_forces, positions)), unit_radii)
     ftime = ftime + time.time() - f
 
+    #Calculate and update potential_energy
+    e = time.time()
+    potential_energy = np.sum(np.nan_to_num(1/magnitudes, 0, 0, 0))/2
+    etime = etime + time.time() - e
+
     #Calculate and update velocities
     v = time.time()
     velocities = (velocities + component_forces*dt)
@@ -57,11 +62,6 @@ while current_time<duration:
     s = time.time()
     separations = np.repeat(positions[:, np.newaxis, :], particle_count, axis=1) - np.repeat(positions[np.newaxis, :, :], particle_count, axis=0)
     stime = stime + time.time() - s
-
-    #Calculate and update potential_energy
-    e = time.time()
-    potential_energy = np.sum(np.nan_to_num(1/np.linalg.norm(separations, axis=2), 0, 0, 0))/2
-    etime = etime + time.time() - e
 
     current_time = current_time + dt
 
