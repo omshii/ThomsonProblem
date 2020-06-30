@@ -14,8 +14,6 @@ particle_count = int(sys.argv[1])
 dt = float(sys.argv[2])
 duration = float(sys.argv[3])
 
-def calc_unit_vector(position):
-    return position/np.linalg.norm(position)
 
 #Initialization
 velocities = np.zeros((particle_count, 3))
