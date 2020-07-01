@@ -36,7 +36,7 @@ while current_time<duration:
     magnitudes = np.linalg.norm(separations, axis=2)
     total_forces = np.sum(np.repeat(np.nan_to_num(1/(magnitudes * magnitudes * magnitudes), 0, 0, 0)[:, :, np.newaxis], 3, axis=2)*separations, axis=1)
     unit_radii = np.repeat(1/np.linalg.norm(positions, axis=1)[:, np.newaxis], 3, axis=1)*positions
-    component_forces = total_forces - np.einsum('i, ij->ij', (np.einsum('ij, ij->i',total_forces, positions)), unit_radii)
+    constrained_forces = total_forces - np.einsum('i, ij->ij', (np.einsum('ij, ij->i',total_forces, positions)), unit_radii)
     ftime = ftime + time.time() - f
 
     #Calculate and update potential_energy
@@ -60,6 +60,8 @@ while current_time<duration:
     s = time.time()
     separations = np.repeat(positions[:, np.newaxis, :], particle_count, axis=1) - np.repeat(positions[np.newaxis, :, :], particle_count, axis=0)
     stime = stime + time.time() - s
+
+    print(potential_energy)
 
     current_time = current_time + dt
 
