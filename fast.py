@@ -14,7 +14,6 @@ particle_count = int(sys.argv[1])
 dt = float(sys.argv[2])
 duration = float(sys.argv[3])
 
-
 #Initialization
 velocities = np.zeros((particle_count, 3))
 separations = np.zeros((particle_count, particle_count, 3))
@@ -46,7 +45,7 @@ while current_time<duration:
 
     #Calculate and update velocities
     v = time.time()
-    velocities = (velocities + component_forces*dt)
+    velocities = (velocities + constrained_forces*dt)
     velocities = 0.997*(velocities - np.einsum('i, ij->ij', (np.einsum('ij, ij->i',velocities, positions)), unit_radii))
     vtime = vtime + time.time() - v
 
