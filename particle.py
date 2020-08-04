@@ -12,11 +12,11 @@ class Particle:
         self.accel = [np.zeros(3)]
 
     def velocity_constraint(self, vel, radius):
-        vel = 99.7*self.dt*(vel - np.dot(vel, radius)*radius/np.linalg.norm(radius))
+        vel = 0.997*(vel - np.dot(vel, radius)*radius/np.linalg.norm(radius))
         return vel
 
     def position_constraint(self, pos):
-        pos = pos / (np.linalg.norm(pos))
+        pos = 1 * pos / (np.linalg.norm(pos))
         return pos
 
     def update(self):
